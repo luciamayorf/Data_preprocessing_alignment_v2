@@ -1,16 +1,16 @@
 # Data preprocessing and alignment
 
-In this repository, I keep the scripts used for WGS sequencing data quality control ([fastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) and [multiQC](https://multiqc.info/docs/)), trimming ([fastp](https://github.com/OpenGene/fastp)), alignment (Enrico's [congenomics_fastq_align](https://github.com/Enricobazzi/congenomics_fastq_align) python package) and quality control of the aligment ([qualimap](http://qualimap.conesalab.org/doc_html/analysis.html)).
+This repository contains the scripts used for WGS sequencing data quality control ([fastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) and [multiQC](https://multiqc.info/docs/)), trimming ([fastp](https://github.com/OpenGene/fastp)), alignment (Enrico's [congenomics_fastq_align](https://github.com/Enricobazzi/congenomics_fastq_align) python package) and quality control of the aligment ([qualimap](http://qualimap.conesalab.org/doc_html/analysis.html)).
 
-** The scripts shown are tested with one sample sequenced in previous projects.
+** The scripts shown below are tested with one sample sequenced in previous projects.
 
 ---
 
 ## 1. Raw data quality control
 
-First, we do a first FastQC analysis of the FASTQ files received with FastQC and multiQC to summarize the results, running the script [fastqs_fastQC.sh](https://github.com/luciamayorf/Data_preprocessing_alignment/blob/main/scripts/fastqs_fastQC.sh) <input_fastq> to obtain the fastQC of each pair of reads.
+First, we perform a first FastQC analysis of the FASTQ files received using FastQC and multiQC to summarize the results, running the script [fastqs_fastQC.sh](https://github.com/luciamayorf/Data_preprocessing_alignment/blob/main/scripts/fastqs_fastQC.sh) <input_fastq> to obtain the fastQC of each pair of reads.
 
-Note: the sample list here have a very specific format, with the following columns: path/to/fastq (without fastq_suffix not distinguising between read1 and read2), sample name, sex.
+Note: the sample list here have a very specific format, with the following columns: /path/to/fastq (without fastq_suffix not distinguising between read1 and read2), sample name, sex.
 
 ```bash
 for input_fastq in $(cut -f1 /mnt/lustre/hsm/nlsas/notape/home/csic/ebd/jgl/lynx_genome/lynx_data/FASTQ_files/fastq_paths_samples_list_old_sequences.txt); do
@@ -19,7 +19,7 @@ for input_fastq in $(cut -f1 /mnt/lustre/hsm/nlsas/notape/home/csic/ebd/jgl/lynx
 done
 ```
 
-Then we summarize the results with multiqc, running the script [multiqc_script.sh](https://github.com/luciamayorf/Data_preprocessing_alignment/blob/main/scripts/multiqc_script.sh) <fastq_output_directory>
+Then, we summarize the results with multiqc, running the script [multiqc_script.sh](https://github.com/luciamayorf/Data_preprocessing_alignment/blob/main/scripts/multiqc_script.sh) <fastq_output_directory>
 
 ```bash
 sbatch -t 00:15:00 -c 10 --mem 5GB /home/csic/eye/lmf/scripts/Data_preprocessing_alignment/multiqc_script.sh /mnt/lustre/hsm/nlsas/notape/home/csic/ebd/jgl/lynx_genome/lynx_data/FASTQ_files/genome_proyect_backup/fastq_genome_project/fastqc
@@ -29,7 +29,7 @@ sbatch -t 00:15:00 -c 10 --mem 5GB /home/csic/eye/lmf/scripts/Data_preprocessing
 
 ## 2. Reads trimming and quality control
 
-We do a first trimming with fastp, followed by a quality control with FastQC and MultiQC of the trimmed reads.
+We perform the FASTQs trimming with fastp, followed by a quality control with FastQC and MultiQC of the trimmed reads.
 
 We run fastp with the script [fastp_trimming.sh](https://github.com/luciamayorf/Data_preprocessing_alignment/blob/main/scripts/fastp_trimming.sh) <input_fastq>:
 ```bash
@@ -60,11 +60,11 @@ sbatch -t 00:15:00 -c 10 --mem 5GB /home/csic/eye/lmf/scripts/Data_preprocessing
 
 ## 3. Alignment and quality control
 
-After that, we perform a quality control of the aligment with qualimap, samtools and MultiQC.
+After that, we perform a quality control of the aligment using qualimap, samtools and MultiQC.
 
-We align the reads to the reference genome using Enrico's package [congenomics_fastq_align](https://github.com/Enricobazzi/congenomics_fastq_align) to generate the scripts. I downloaded the whole package and installed it in my $HOME in CESGA's ft3. I work from directory "/home/csic/eye/lmf/alignments/congenomics_fastq_align-0.1.0"
+We align the reads to the reference genome using Enrico's package [congenomics_fastq_align](https://github.com/Enricobazzi/congenomics_fastq_align) to generate the scripts. I downloaded the whole package and installed it in my $HOME in CESGA's ft3. We workeed from directory "/home/csic/eye/lmf/alignments/congenomics_fastq_align-0.1.0"
 
-For that, we need to generate a sample dictionary using the custom script [make_fastqs_dictionary.sh](https://github.com/luciamayorf/Data_preprocessing_alignment/blob/main/scripts/make_fastqs_dictionary.sh). This script requires a list where the first column contains the path and the pair of fastq prefix (no .fq.gz) and the second column contains the final sample name, tab-separated (careful with the CODE_IDFQ variable definition, it highly depends on the fastq name format!). Example:
+For that, we need to generate a sample dictionary using the custom script [make_fastqs_dictionary.sh](https://github.com/luciamayorf/Data_preprocessing_alignment/blob/main/scripts/make_fastqs_dictionary.sh). This script requires a list where the first column contains the path and the pair of fastq prefix (no ".fq.gz" suffix) and the second column contains the final sample name, tab-separated (careful with the CODE_IDFQ variable definition, it highly depends on the fastq name format!). Example:
 
 > /path/to/FASTQ_files/LYNX_06_08/C5TMUACXX_2_1nf     c_lp_sm_0134
 >
@@ -73,7 +73,7 @@ For that, we need to generate a sample dictionary using the custom script [make_
 > /path/to/FASTQ_files/LYNX_06_08/C5TMUACXX_2_2nf     c_lp_do_0141
 
 
-We start from a list of the samples, in this case, I obtain it from the second column of fastq sample list. Here, the YAML template not only contains a sample dictionary, but also the paths to the reference genome, the output folder, and the modules that need to be loaded to run the script.
+We start from a list of the samples (in this case, I obtain it from the second column of fastq sample list). Here, the YAML template not only contains a sample dictionary, but also the paths to the reference genome, the output folder, and the modules that need to be loaded to run the script.
 
 ```bash
 for i in $(cut -f2 /mnt/lustre/hsm/nlsas/notape/home/csic/ebd/jgl/lynx_genome/lynx_data/FASTQ_files/fastq_paths_samples_list_old_sequences.txt | sort -u); do
